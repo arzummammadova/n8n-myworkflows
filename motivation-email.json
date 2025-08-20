@@ -1,0 +1,124 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 16
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8fdf7799-0f67-4ad7-8191-b348e43bf73f",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://zenquotes.io/api/random",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "bbc98191-4345-4e74-a780-318225f178d5",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ZenQuotes response array\nconst items = $input.all();\nconst quote = items[0]?.json?.q || \"No motivational quote available 😅\";\nconst author = items[0]?.json?.a || \"Unknown\";\n\n// Example: username from input or default\nconst username = $input.first()?.json?.username || \"Friend\";\n\n// Random color palette\nconst colors = ['#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#FFEAA7'];\n\n// İki random rəng seçək\nconst randomColor1 = colors[Math.floor(Math.random() * colors.length)];\nlet randomColor2 = colors[Math.floor(Math.random() * colors.length)];\n\n// Əgər eyni rəng düşsə, başqa rəng seçək\nwhile(randomColor1 === randomColor2){\n  randomColor2 = colors[Math.floor(Math.random() * colors.length)];\n}\n\n// Prepare HTML\nconst htmlContent = `\n<div style=\"max-width:600px;margin:0 auto;font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\">\n  <h2 style=\"color:#222;text-align:center;margin-bottom:20px;\">🌞 Good Morning, ${username}!</h2>\n  <div style=\"background: linear-gradient(135deg, ${randomColor1}, ${randomColor2}); padding:40px; border-radius:15px; text-align:center; color:white; box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom:25px;\">\n    <p style=\"font-size:22px; font-weight:600; line-height:1.5; margin:0 0 20px 0; font-style:italic;\">\n      \"${quote}\"\n    </p>\n    <p style=\"font-size:18px; opacity:0.9; margin:0;\">\n      — ${author}\n    </p>\n  </div>\n  <p style=\"color:#555; text-align:center; font-size:16px; line-height:1.6;\">\n    Today is a perfect day to start something amazing! 💪✨\n  </p>\n</div>\n`;\n\nreturn {\n  htmlContent,\n  quote,\n  author,\n  username,\n  backgroundGradient: [randomColor1, randomColor2]\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "3196aec0-57d2-4cf3-80f3-53c98d529bfa",
+      "name": "Code",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "sendTo": "arzuam-af106@code.edu.az",
+        "subject": "=🌟 {{new Date().toLocaleDateString('az-AZ')}} - Today's motivation ",
+        "message": "={{ $node[\"Code\"].json[\"htmlContent\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "9c2410a4-e9df-48e4-bf33-039616d60a30",
+      "name": "Send a message",
+      "webhookId": "fa3cb2b6-13d3-4550-a438-7dc7b67c1d87",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oN4zWw4cAgNLi4s6",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2459e706-fc20-4fc1-baf6-3cf05093c7e6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "976e80d648ca25b313b8e4e603aa9b4d216a1cd553af02ba272d4ef70a7e1e0a"
+  },
+  "id": "mbOplclowhpMc6xW",
+  "tags": []
+}
