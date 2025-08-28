@@ -1,0 +1,302 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1N2f1EbP8KIKH7DJHlim8W2Tdl5hkcNHE_R82PnLMRhU",
+          "mode": "list",
+          "cachedResultName": "Тестирование (Ответы)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2f1EbP8KIKH7DJHlim8W2Tdl5hkcNHE_R82PnLMRhU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1196423874,
+          "mode": "list",
+          "cachedResultName": "Ответы на форму (1)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N2f1EbP8KIKH7DJHlim8W2Tdl5hkcNHE_R82PnLMRhU/edit#gid=1196423874"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c3f4e028-37a6-44a7-9faf-4f7875e1949d",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "M619ot0KqOqnIr3Y",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dbdba974-c1fa-4fb7-aedf-6b406b211317",
+              "leftValue": "={{$json[\"Баллы\"]}}",
+              "rightValue": 70,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "1bf9f163-e732-4e13-9d79-54b852a4f905",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6358f5e7-90fb-4465-8d5f-27d062a1be51",
+              "name": "Name",
+              "value": "={{ $json.Name }}",
+              "type": "string"
+            },
+            {
+              "id": "fdeb8380-76e0-4734-8f60-94f0fa522cab",
+              "name": "LastName",
+              "value": "={{ $json.LastName }}",
+              "type": "string"
+            },
+            {
+              "id": "1a00e126-6234-4c51-89ab-31c751a1ac45",
+              "name": "Баллы",
+              "value": "={{ $json['Баллы'] }}",
+              "type": "number"
+            },
+            {
+              "id": "97928469-1423-4b02-918e-282411d10061",
+              "name": "Отметка времени",
+              "value": "={{ $json['Отметка времени'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        -96
+      ],
+      "id": "c84117a8-4b57-4368-9ede-77859b234fa9",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.documentId }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "{{Name}}",
+              "replaceText": "={{ $('Google Sheets Trigger').item.json.Name }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{LastName}}",
+              "replaceText": "={{ $('Google Sheets Trigger').item.json['Баллы'].toString() }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "{{ Баллы }}",
+              "replaceText": "={{ $('Google Sheets Trigger').item.json[\"Баллы\"].toString() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -80
+      ],
+      "id": "cbe2878e-8ffd-4df2-93a0-bb950cfac61c",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "iHaCUhBFXMISphch",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "1I32rElm730SJAJLjJH3_a0m1-0kHjjDPcrLJNPw9T0g",
+        "simple": false
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "e2ff6670-e70c-4425-a7e3-31a46d03fb81",
+      "name": "Get a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "iHaCUhBFXMISphch",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('If').item.json['Адрес электронной почты'] }}",
+        "subject": "=Təbriklər! Sertifikatınız hazırdır - {{ $('Google Sheets Trigger').item.json[\"Name\"] }} {{ $('Google Sheets Trigger').item.json[\"LastName\"] }}",
+        "message": "=Hörmətli {{ $('Google Sheets Trigger').item.json[\"Name\"] }} {{ $('Google Sheets Trigger').item.json[\"LastName\"] }},  Təbriklər! Siz {{ $('Google Sheets Trigger').item.json[\"Баллы\"] }}/100 bal toplayaraq sertifikat qazanmısınız.  Sertifikatınız Google Drive-da hazırlanmışdır.  Linkə daxil olaraq sertifikatınızı yükləyə bilərsiniz: https://docs.google.com/document/d/{{ $json.documentId }}/edit  Təbriklər!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1104,
+        -80
+      ],
+      "id": "11735f48-3918-4cd8-87a9-59feb1bfe7cd",
+      "name": "Send a message",
+      "webhookId": "0a3cfd9e-b3d9-4a15-ae5b-110869ecd2a1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oN4zWw4cAgNLi4s6",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('If').item.json['Адрес электронной почты'] }}",
+        "subject": "=Təəssüf ki siz sertifikat qazanmadiniz",
+        "message": "=Hörmətli {{ $('Google Sheets Trigger').item.json[\"Name\"] }} {{ $('Google Sheets Trigger').item.json[\"LastName\"] }} Siz {{ $('Google Sheets Trigger').item.json[\"Баллы\"] }}/100 bal  topladiniz  Amma Sertifikat qazanmadiniz gorusenedek",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        496,
+        176
+      ],
+      "id": "892bdd20-845e-4c7f-8565-528e7d6953b8",
+      "name": "Send a message1",
+      "webhookId": "0a3cfd9e-b3d9-4a15-ae5b-110869ecd2a1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oN4zWw4cAgNLi4s6",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a document": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "aa0f223a-10a5-4738-9a7d-02006d7024a1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "976e80d648ca25b313b8e4e603aa9b4d216a1cd553af02ba272d4ef70a7e1e0a"
+  },
+  "id": "qPgrPMCEPUJjXYz3",
+  "tags": []
+}
