@@ -1,0 +1,390 @@
+{
+  "name": "My workflow 4",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "93c182c8-cb6d-4bfe-9e4a-37f3ad4f864e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    u.email,\n    u.username,\n    p.name AS product_name,\n    c.quantity,\n    COALESCE(p.stock, 0) AS stock_left\nFROM users u\nLEFT JOIN cart c \n    ON u.user_id = c.user_id \n    AND c.status = 'pending' \n    AND TIMESTAMPDIFF(HOUR, c.added_at, NOW()) >= 0\nLEFT JOIN products p \n    ON c.product_id = p.product_id;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        224,
+        -144
+      ],
+      "id": "113d9b34-6aaf-42af-b3b9-67e475cc31a0",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "mySql": {
+          "id": "yyFt4E4780m3RKbJ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e8270771-65c1-48ed-ae4d-88a98fd4a3d6",
+              "name": "username",
+              "value": "={{ $json.username }}",
+              "type": "string"
+            },
+            {
+              "id": "29469843-38e1-4def-a7fe-23072cf12dd8",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "dd6c5032-d213-481d-ba3d-c43c3901be36",
+              "name": "stock_left",
+              "value": "={{ $json.stock_left }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        480
+      ],
+      "id": "95075849-abfd-4907-afcb-8be23ec94466",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ca5f67fc-e98e-492c-8289-277f9fc71efe",
+              "leftValue": "={{ $json.quantity }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        -144
+      ],
+      "id": "c23ec2ab-19a6-470f-b885-38adb864f82b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "BasketBee",
+        "message": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 2px solid #ff7f50; border-radius: 14px; padding: 25px; background: linear-gradient(135deg, #fff0e5, #ffe4b5); text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);\">\n  <h2 style=\"color: #ff4500; font-size: 24px;\">Salam {{ $json.username }} 👋</h2>\n  <p style=\"font-size: 16px; color: #555; margin-top: 10px;\">\n    Səbətin boşdur! İndi sifariş etmək istədiyin məhsulu əlavə et və alışını tamamla 🛍️\n  </p>\n  <p style=\"font-size: 18px; font-weight: bold; color: #ff6347; margin-top: 15px;\">\n    İndi əlavə et və endirimləri qaçırma!\n  </p>\n  \n  <a href=\"https://yourshop.com/shop\" style=\"display: inline-block; margin-top: 25px; padding: 14px 30px; background-color: #ff4500; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 16px; transition: all 0.3s ease;\">\n    Məhsullara bax & Sifariş et\n  </a>\n</div>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        992,
+        -32
+      ],
+      "id": "ebd2685d-ef1e-4637-850a-9dd6403036f0",
+      "name": "Send a message1",
+      "webhookId": "a3858f15-596d-486d-a302-14889ed1264d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oN4zWw4cAgNLi4s6",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "BasketBee",
+        "message": "=<div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 2px solid #ffd700; border-radius: 12px; padding: 20px; background: #fff8dc; text-align: center;\"> <h2 style=\"color: #ff4500;\">Salam {{ $json.username }} 👋</h2> <p style=\"font-size: 16px; color: #333;\">Səbətində məhsullar tükənmək üzrədir! Bitməməmiş fürsətdən qaçma 🛒</p> <p style=\"font-size: 18px; font-weight: bold; color: #ff4500;\">Qalan məhsul sayı: {{ $json.stock_left }}</p> <a href=\"https://yourshop.com/cart\" style=\"display: inline-block; margin-top: 20px; padding: 12px 25px; background-color: #ff4500; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;\"> Səbətinə bax & Alış et </a> </div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        -224
+      ],
+      "id": "e4aba2fa-2798-43ce-bcf5-18f1c9419a68",
+      "name": "Send a message2",
+      "webhookId": "a3858f15-596d-486d-a302-14889ed1264d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oN4zWw4cAgNLi4s6",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select * from products\nwhere stock<10",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        256,
+        192
+      ],
+      "id": "088b1806-8f26-4030-b0de-681340cec8bc",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "mySql": {
+          "id": "yyFt4E4780m3RKbJ",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "spreadsheet",
+        "title": "Tükənən məhsullar ",
+        "sheetsUi": {
+          "sheetValues": [
+            {
+              "title": "Critical Stock"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        272,
+        480
+      ],
+      "id": "2b3bc7bc-8575-47fb-ba33-25df4c2a130b",
+      "name": "Create spreadsheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "f3MV75Wu03RSunGj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "arzuam-af106@code.edu.az",
+        "subject": "Tükənmək üzrə olan məhsullar",
+        "message": "=Hər vaxtınız xeyir keçid edərək tükənən məhsullarlar tanış ola bilərsiniz \n\nhttps://docs.google.com/spreadsheets/d/1j3AM8Nx5CK0prB5s0enaprWEtcU0uS4jRbxJdpFYTuo/edit?gid=2021402686#gid=2021402686",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        944,
+        176
+      ],
+      "id": "f66650f4-75dd-4ed6-895d-e3b655d41c4a",
+      "name": "Send a message3",
+      "webhookId": "58421358-01f7-408d-9d7a-0d29ad5a3ded",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oN4zWw4cAgNLi4s6",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1j3AM8Nx5CK0prB5s0enaprWEtcU0uS4jRbxJdpFYTuo",
+          "mode": "list",
+          "cachedResultName": "Tükənən məhsullar ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1j3AM8Nx5CK0prB5s0enaprWEtcU0uS4jRbxJdpFYTuo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2021402686,
+          "mode": "list",
+          "cachedResultName": "Critical Stock",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1j3AM8Nx5CK0prB5s0enaprWEtcU0uS4jRbxJdpFYTuo/edit#gid=2021402686"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stock",
+              "displayName": "stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        192
+      ],
+      "id": "279b7dc0-869f-49bc-af9d-127fb3a81dfb",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "f3MV75Wu03RSunGj",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create spreadsheet": {
+      "main": [
+        []
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7be5bacf-5bf5-40ca-9c03-a5460324b6c8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "976e80d648ca25b313b8e4e603aa9b4d216a1cd553af02ba272d4ef70a7e1e0a"
+  },
+  "id": "TTswJmg1tkT4Hnfn",
+  "tags": []
+}
